@@ -89,7 +89,7 @@ function calcOffsets()
       // calc offset bounding box before render
       g_renderer = new LSystems.TurtleRenderer(WIDTH, HEIGHT);
       g_renderer.setAngle(parseInt(global_settings.angle));
-      g_renderer.setRenderLineWidths(false);
+      g_renderer.setWidthDelta(1);
       var before = new Date();
       g_renderer.process(g_commands, false);
       var after = new Date();
@@ -139,6 +139,7 @@ function renderCmds()
       // reprocess...
       g_renderer.setOffsets(xoffset, yoffset);
       g_renderer.setAngle(parseInt(global_settings.angle));
+      g_renderer.setWidthDelta(newDistance / oldDistance);
       g_renderer.setDistance(newDistance);
       var before = new Date();
       g_renderer.process(g_commands, true);
@@ -193,6 +194,8 @@ const PUSH       = '[';
 const POP        = ']';
 const COLOUR     = 'C';
 const CIRCLE     = '@';
+const BOLDER     = '#';
+const LIGHTER    = '!';
 
 const RAD = Math.PI/180.0;
 const ROUND = 2*Math.PI;
@@ -221,7 +224,7 @@ const ROUND = 2*Math.PI;
          "rgba(24, 180, 24, 0.75)",
          "rgba(48, 220, 48, 0.5)",
          "rgba(64, 255, 64, 0.5)",
-         "rgb(255, 64, 64)",
+         "rgba(255, 64, 64, 0.8)",
          ];
       
       return this;
@@ -310,14 +313,6 @@ const ROUND = 2*Math.PI;
       _maxy: 0,
       
       /**
-       * The maximum stack depth reached during processing
-       * 
-       * @property _maxStackDepth
-       * @type number
-       */
-      _maxStackDepth: 0,
-      
-      /**
        * Rendering stack
        * 
        * @property _stack
@@ -334,12 +329,12 @@ const ROUND = 2*Math.PI;
       _colourList: null,
       
       /**
-       * Render line width based on stack depth
+       * line width delta
        * 
-       * @property _renderLineWidths
-       * @type boolean
+       * @property _widthDelta
+       * @type number
        */
-      _renderLineWidths: true,
+      _widthDelta: 1,
       
       /**
        * Set rendering distance units per forward turtle movement.
@@ -366,10 +361,10 @@ const ROUND = 2*Math.PI;
          this._angle = angle;
          return this;
       },
-      
-      setRenderLineWidths: function setRenderLineWidths(val)
-      {
-         this._renderLineWidths = val;
+
+      setWidthDelta: function(val) {
+         this._widthDelta = val;
+         return this;
       },
       
       /**
@@ -436,13 +431,12 @@ const ROUND = 2*Math.PI;
          }
          
          // start at grid 0,0 facing north with no colour index
-         var pos = new LSystems.Location(0.0, 0.0, 90.0, -1);
+         var pos = new LSystems.Location(0.0, 0.0, 90.0, -1, 1);
          
          // process each command in turn
-         var yOffset = this._yOffset, maxStackDepth = this._maxStackDepth;
+         var yOffset = this._yOffset;
          var colourList = this._colourList, stack = this._stack;
-         var renderLineWidths = this._renderLineWidths;
-         var rad, width, colour, lastColour = null;
+         var rad, colour, lastColour = null;
          var c, len = cmds.length;
          var updateColor = function() {
             colour = colourList[pos.colour];
@@ -452,6 +446,9 @@ const ROUND = 2*Math.PI;
                ctx.fillStyle = colour;
                lastColour = colour;
             }
+         };
+         var updateWidth = function() {
+            ctx.lineWidth = pos.width >= 0 ? pos.width : 0;
          };
          for (var i=0; i<len; i++)
          {
@@ -483,8 +480,7 @@ const ROUND = 2*Math.PI;
                
                case PUSH:
                {
-                  stack.push(new LSystems.Location(pos.x, pos.y, pos.heading, pos.colour));
-                  if (!draw && stack.length > this._maxStackDepth){ this._maxStackDepth = stack.length; }
+                  stack.push(new LSystems.Location(pos.x, pos.y, pos.heading, pos.colour, pos.width));
                   break;
                }
                
@@ -493,17 +489,29 @@ const ROUND = 2*Math.PI;
                   pos = stack.pop();
                   if (draw) {
                      updateColor();
-                  } else if (stack.length > this._maxStackDepth){ this._maxStackDepth = stack.length; }
+                  }
+                  break;
+               }
+               case BOLDER:
+               {
+                  pos.width += this._widthDelta;
+                  if (draw) {
+                     updateWidth();
+                  }
+                  break;
+               }
+               case LIGHTER:
+               {
+                  pos.width -= this._widthDelta;
+                  if (draw) {
+                     updateWidth();
+                  }
                   break;
                }
 
                case CIRCLE:
                {
-                  var radius = 1;
-                  if (renderLineWidths) {
-                     width = (maxStackDepth - stack.length);
-                     radius = width >= 1 ? width : 1;
-                  }
+                  var radius = pos.width >= 0 ? pos.width : 0;
                   if (draw) {
                      // render circle
                      ctx.save();
@@ -535,11 +543,6 @@ const ROUND = 2*Math.PI;
                   {
                      if (c.toUpperCase() == c) {
                         // render this element
-                        if (renderLineWidths)
-                        {
-                           width = (maxStackDepth - stack.length);
-                           ctx.lineWidth = width >= 1 ? width : 1;
-                        }
                         ctx.beginPath();
                         ctx.moveTo(lastX, HEIGHT - (lastY + yOffset));
                         ctx.lineTo(pos.x, HEIGHT - (pos.y + yOffset));
@@ -688,13 +691,14 @@ const ROUND = 2*Math.PI;
  */
 (function()
 {
-   LSystems.Location = function(x, y, heading, colour)
+   LSystems.Location = function(x, y, heading, colour, width)
    {
       this.x = x;
       this.y = y;
       this.heading = heading;
       this.colour = colour;
-      
+      this.width = width;
+
       return this;
    };
    
@@ -730,7 +734,9 @@ const ROUND = 2*Math.PI;
        * @property colour
        * @type number
        */
-      colour: 0
+      colour: 0,
+
+      width: 0,
    };
 })();
 

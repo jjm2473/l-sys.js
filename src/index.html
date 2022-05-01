@@ -305,7 +305,19 @@
             "angle": 25,
             "axiom": "X",
             "rules": [
-              "X=C0F-[[X]+X]+f[C3+FC3XC4@]-C2XC4@",
+              "X=C0F-[[X]+X]+f[C3+FC3X[###C4@]]-C2X[#C4@]",
+              "F=C0FF",
+              "f=ff"
+            ],
+            "img": "fractal_plant.png",
+            "title": "Fractal Plant"
+          },
+          {
+            "iterations": 6,
+            "angle": 25,
+            "axiom": "#####X",
+            "rules": [
+              "X=C0F-[[!X]+X]+f[C3+FC3!X[###C4@]]-C2X[#C4@]",
               "F=C0FF",
               "f=ff"
             ],
