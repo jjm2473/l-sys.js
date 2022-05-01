@@ -192,9 +192,10 @@ const CLOCKWISE  = '-';
 const PUSH       = '[';
 const POP        = ']';
 const COLOUR     = 'C';
+const CIRCLE     = '@';
 
 const RAD = Math.PI/180.0;
-
+const ROUND = 2*Math.PI;
 
 /**
  * TurtleRenderer class
@@ -215,7 +216,13 @@ const RAD = Math.PI/180.0;
          this._height = height;
       }
       
-      this._colourList = ["rgba(140, 80, 60, 0.75)", "rgba(24, 180, 24, 0.75)", "rgba(48, 220, 48, 0.5)", "rgba(64, 255, 64, 0.5)"];
+      this._colourList = [
+         "rgba(140, 80, 60, 0.75)",
+         "rgba(24, 180, 24, 0.75)",
+         "rgba(48, 220, 48, 0.5)",
+         "rgba(64, 255, 64, 0.5)",
+         "rgb(255, 64, 64)",
+         ];
       
       return this;
    };
@@ -394,7 +401,7 @@ const RAD = Math.PI/180.0;
             this._yOffset = yOffset;
          }
       },
-      
+
       /*
        * Process the command string and render
        * 
@@ -437,6 +444,15 @@ const RAD = Math.PI/180.0;
          var renderLineWidths = this._renderLineWidths;
          var rad, width, colour, lastColour = null;
          var c, len = cmds.length;
+         var updateColor = function() {
+            colour = colourList[pos.colour];
+            if (colour && lastColour !== colour)
+            {
+               ctx.strokeStyle = colour;
+               ctx.fillStyle = colour;
+               lastColour = colour;
+            }
+         };
          for (var i=0; i<len; i++)
          {
             c = cmds.charAt(i);
@@ -447,6 +463,9 @@ const RAD = Math.PI/180.0;
                {
                   // get colour index from next character
                   pos.colour = (cmds.charAt(++i) - '0');
+                  if (draw) {
+                     updateColor();
+                  }
                   break;
                }
                
@@ -465,15 +484,43 @@ const RAD = Math.PI/180.0;
                case PUSH:
                {
                   stack.push(new LSystems.Location(pos.x, pos.y, pos.heading, pos.colour));
+                  if (!draw && stack.length > this._maxStackDepth){ this._maxStackDepth = stack.length; }
                   break;
                }
                
                case POP:
                {
                   pos = stack.pop();
+                  if (draw) {
+                     updateColor();
+                  } else if (stack.length > this._maxStackDepth){ this._maxStackDepth = stack.length; }
                   break;
                }
-               
+
+               case CIRCLE:
+               {
+                  var radius = 1;
+                  if (renderLineWidths) {
+                     width = (maxStackDepth - stack.length);
+                     radius = width >= 1 ? width : 1;
+                  }
+                  if (draw) {
+                     // render circle
+                     ctx.save();
+                     ctx.beginPath();
+                     ctx.arc(pos.x, HEIGHT - (pos.y + yOffset), radius, 0, ROUND);
+                     ctx.closePath();
+                     ctx.fill();
+                     ctx.restore();
+                  } else {
+                     if (pos.x - radius < this._minx) this._minx = pos.x - radius;
+                     else if (pos.x + radius > this._maxx) this._maxx = pos.x + radius;
+                     if (pos.y - radius < this._miny) this._miny = pos.y - radius;
+                     else if (pos.y + radius > this._maxy) this._maxy = pos.y + radius;
+                  }
+                  break;
+               }
+
                default:
                {
                   lastX = pos.x;
@@ -484,25 +531,21 @@ const RAD = Math.PI/180.0;
                   pos.x += distance * Math.cos(rad);
                   pos.y += distance * Math.sin(rad);
 
-                  if (draw && c.toUpperCase() == c)
+                  if (draw)
                   {
-                     // render this element
-                     if (renderLineWidths)
-                     {
-                        width = (maxStackDepth - stack.length);
-                        ctx.lineWidth = width >= 1 ? width : 1;
+                     if (c.toUpperCase() == c) {
+                        // render this element
+                        if (renderLineWidths)
+                        {
+                           width = (maxStackDepth - stack.length);
+                           ctx.lineWidth = width >= 1 ? width : 1;
+                        }
+                        ctx.beginPath();
+                        ctx.moveTo(lastX, HEIGHT - (lastY + yOffset));
+                        ctx.lineTo(pos.x, HEIGHT - (pos.y + yOffset));
+                        ctx.closePath();
+                        ctx.stroke();
                      }
-                     colour = colourList[pos.colour];
-                     if (colour && lastColour !== colour)
-                     {
-                        ctx.strokeStyle = colour;
-                        lastColour = colour;
-                     }
-                     ctx.beginPath();
-                     ctx.moveTo(lastX, HEIGHT - (lastY + yOffset));
-                     ctx.lineTo(pos.x, HEIGHT - (pos.y + yOffset));
-                     ctx.closePath();
-                     ctx.stroke();
                   }
                   else
                   {
@@ -511,7 +554,6 @@ const RAD = Math.PI/180.0;
                      else if (pos.x > this._maxx) this._maxx = pos.x;
                      if (pos.y < this._miny) this._miny = pos.y;
                      else if (pos.y > this._maxy) this._maxy = pos.y;
-                     if (stack.length > this._maxStackDepth) this._maxStackDepth = stack.length;
                   }
                   
                   break;

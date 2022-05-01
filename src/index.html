@@ -293,8 +293,21 @@
             "angle": 25,
             "axiom": "X",
             "rules": [
-              "X=C0F-[C2[X]+C3X]+C1F[C3+FX]-X",
-              "F=FF"
+              "X=C0F-[C2[X]+C3X]+f[C3+FX]C1-X",
+              "F=FF",
+              "f=ff"
+            ],
+            "img": "fractal_plant.png",
+            "title": "Fractal Plant"
+          },
+          {
+            "iterations": 6,
+            "angle": 25,
+            "axiom": "X",
+            "rules": [
+              "X=C0F-[[X]+X]+f[C3+FC3XC4@]-C2XC4@",
+              "F=C0FF",
+              "f=ff"
             ],
             "img": "fractal_plant.png",
             "title": "Fractal Plant"
@@ -391,7 +404,7 @@
             ],
             "img": "penrose_tiling.png",
             "title": "Penrose Tiling"
-          }
+          },
         ];
 
       document.addEventListener('DOMContentLoaded', function(){
