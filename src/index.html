@@ -6,7 +6,7 @@
 
     <meta name="author" content="jjm2473">
 
-    <title></title>
+    <title>L-System</title>
 
     <link rel="author" href="https://github.com/jjm2473">
 
@@ -160,7 +160,7 @@
                   <textarea class="form-control" placeholder="F=FF" rows="3" max-rows="5" name="rules" style="white-space: nowrap;"></textarea>
                 </div>
                 <div class="form-group custom-control custom-switch">
-                  <input type="checkbox" class="custom-control-input" id="customSwitch1">
+                  <input type="checkbox" class="custom-control-input" id="customSwitch1" disabled>
                   <label class="custom-control-label" for="customSwitch1">EXT</label>
                 </div>
                 <button id="start" type="submit" class="btn btn-primary btn-block" ><i class="fa fa-pencil-ruler"></i> 绘制</button>
@@ -291,11 +291,11 @@
           {
             "iterations": 6,
             "angle": 25,
-            "axiom": "X",
+            "axiom": "x",
             "rules": [
-              "X=C0F-[C2[X]+C3X]+f[C3+FX]C1-X",
-              "F=FF",
-              "f=ff"
+              "x=C0F-[[x]+x]+C1F[+C2EFx]-[C2E]x",
+              "F=C0FF",
+              "E="
             ],
             "img": "fractal_plant.png",
             "title": "Fractal Plant"
@@ -303,11 +303,11 @@
           {
             "iterations": 6,
             "angle": 25,
-            "axiom": "X",
+            "axiom": "x",
             "rules": [
-              "X=C0F-[[X]+X]+f[C3+FC3X[###C4@]]-C2X[#C4@]",
+              "x=C0F-[[x]+x]+C1F[+C2EF[###C4@]x]-[C2E#C4@]x",
               "F=C0FF",
-              "f=ff"
+              "E="
             ],
             "img": "fractal_plant.png",
             "title": "Fractal Plant"
@@ -315,11 +315,11 @@
           {
             "iterations": 6,
             "angle": 25,
-            "axiom": "#####X",
+            "axiom": "#####x",
             "rules": [
-              "X=C0F-[[!X]+X]+f[C3+FC3!X[###C4@]]-C2X[#C4@]",
+              "x=C0F-[[!x]+x]+C1F[+C2EF[##C4@]!x]-[C2E#C4@]x",
               "F=C0FF",
-              "f=ff"
+              "E="
             ],
             "img": "fractal_plant.png",
             "title": "Fractal Plant"
@@ -329,8 +329,7 @@
             "angle": 60,
             "axiom": "F++F++F",
             "rules": [
-              "F=F-F++F-F",
-              "X=FF"
+              "F=F-F++F-F"
             ],
             "img": "koch_snowflake.png",
             "title": "Koch Snowflake"

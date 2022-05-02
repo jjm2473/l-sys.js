@@ -412,7 +412,9 @@ const ROUND = 2*Math.PI;
          var distance = this._distance;
          var lastX;
          var lastY;
-         
+
+         const DEFAULT_COLOR = "rgb(0,0,0)";
+
          if (draw)
          {
             var canvas = document.getElementById('canvas');
@@ -427,7 +429,7 @@ const ROUND = 2*Math.PI;
             ctx.translate(this._xOffset, 0);
             
             // initial colour if specific colouring not used
-            ctx.strokeStyle = "rgb(0,0,0)";
+            ctx.strokeStyle = DEFAULT_COLOR;
          }
          
          // start at grid 0,0 facing north with no colour index
@@ -436,10 +438,11 @@ const ROUND = 2*Math.PI;
          // process each command in turn
          var yOffset = this._yOffset;
          var colourList = this._colourList, stack = this._stack;
-         var rad, colour, lastColour = null;
+         var rad, colour = null;
+         var lastColour = DEFAULT_COLOR;
          var c, len = cmds.length;
          var updateColor = function() {
-            colour = colourList[pos.colour];
+            colour = pos.colour==-1?DEFAULT_COLOR:(colourList[pos.colour]);
             if (colour && lastColour !== colour)
             {
                ctx.strokeStyle = colour;
