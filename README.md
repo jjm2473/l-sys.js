@@ -12,3 +12,10 @@ L-System
 * ! ：按线段宽度的减量要求减少线段的宽度
 * @ ：按线段宽度作半径画一个点
 
+### [在线试玩](https://jjm2473.github.io/l-sys.js/src/index.html)
+
+#### Thanks
+* [www.kevs3d.co.uk](https://www.kevs3d.co.uk/dev/lsystems/)
+* [Bootstrap](https://getbootstrap.com/docs/4.6)
+* [jQuery](https://jquery.com/)
+* [FontAwesome](https://fontawesome.com/)
